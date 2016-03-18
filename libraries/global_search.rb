@@ -1,7 +1,7 @@
 
 require 'json'
 
-module SbgGlobalSearch
+module GlobalSearch
   module GlobalSearch 
 
    def get_environment_nodes(env=node.chef_environment.downcase)
@@ -11,15 +11,19 @@ module SbgGlobalSearch
       
       #Point the Chef Search client at the appropriate organizations Chef server and load the correct client key
       #If we're searching outside the current organization, and we know where to search
-      if env.downcase != node.chef_environment.downcase and node['sbg_global_search']['search'].has_key? env.downcase
+      if env.downcase != node.chef_environment.downcase and node['global_search']['search'].has_key? env.downcase
         require 'fileutils'
-        FileUtils::mkdir_p '/var/chef/cache'
-        File.open("/var/chef/cache/searchclient.pem", 'w') { |file| file.write(node['sbg_global_search']['search'][env.downcase]['search_key']) }
-        Chef::Config[:client_key] = "/var/chef/cache/searchclient.pem"
-        Chef::Config[:node_name] = "searchclient"
+
+        client_name = node["global_search"]["search"][env.downcase]['client_name']
+
+        client_key_path = File.join(Chef::Config[:file_cache_path], "#{client_name}.pem")
+        File.open(client_key_path, 'w') { |file| file.write(node['global_search']['search'][env.downcase]['search_key']) }
+
+        Chef::Config[:client_key] = client_key_path
+        Chef::Config[:node_name] = client_name
         Chef::Config[:verify_api_cert] = false
         Chef::Config[:ssl_verify_mode] = :verify_none
-        Chef::Config[:chef_server_url] = node['sbg_global_search']['search'][env.downcase]['endpoint']
+        Chef::Config[:chef_server_url] = node['global_search']['search'][env.downcase]['endpoint']
       end
 
       # Search cache per organization
@@ -33,7 +37,7 @@ module SbgGlobalSearch
         # also does repeat node filtering - first one wins
         handler = lambda do |n|
             en = n.clone
-            en['name'] = en['fqdn'].split('.')[0]
+            en.default['name'] = en['fqdn'].split('.')[0]
             unless namehash.has_key?( en['name'] )
                 node.run_state[attr_key].push( en )
                 namehash[en['name']] = true
@@ -52,7 +56,7 @@ module SbgGlobalSearch
 
         # do the search using partial search
         # this incidentially implements paging for >1000 nodes
-        Chef::Search::Query.new.search( :node, "chef_environment:#{env.upcase}", args, &handler );
+        Chef::Search::Query.new.search(:node, "*:*", args, &handler);
         # and sort those by fqdn
         node.run_state[attr_key].sort! { |m,n| m['name'] <=> n['name'] }
       end

@@ -25,5 +25,5 @@ platforms:
 suites:
   - name: default
     run_list:
-      - recipe[sbg_global_search::test]
+      - recipe[global_search::test]
     attributes:

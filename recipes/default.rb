@@ -1,6 +1,6 @@
 ###
-# Cookbook Name:: sbg_global_search
+# Cookbook Name:: global_search
 # Recipe:: <recipe name>
 ###
 
-include_recipe "sbg_global_search::mixins"
+include_recipe "global_search::mixins"

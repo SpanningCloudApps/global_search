@@ -1,6 +1,6 @@
 require 'json'
 
-include_recipe "sbg_global_search::default"
+include_recipe "global_search::default"
 
 hosts = get_role_member_hostnames 'common'
 

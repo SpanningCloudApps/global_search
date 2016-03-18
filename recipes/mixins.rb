@@ -8,4 +8,4 @@
 #
 # Somewhere to apply mixins so we dont have to do it whenever we want to use one
 #
-Chef::Recipe.send( :include, SbgGlobalSearch::GlobalSearch )
+Chef::Recipe.send( :include, GlobalSearch::GlobalSearch )

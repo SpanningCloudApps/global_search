@@ -1,4 +1,4 @@
-name             'sbg_global_search'
+name             'global_search'
 maintainer       'Sky Betting and Gaming'
 maintainer_email 'gavin.harris@skybettingandgaming.com'
 license          'Apache 2.0'

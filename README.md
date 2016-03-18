@@ -30,7 +30,7 @@ Subsequent searches during compile or execution are filled from the node.run_sta
 The same query with global_search looks like this:
 
 ```rb
-chef-shell> include_recipe "sbg_global_search"
+chef-shell> include_recipe "global_search"
 chef-shell> result = get_role_member_hostnames('common')
 ['host-a','host-b','host-c']
 chef-shell>
@@ -41,9 +41,9 @@ We can also search across Organizations. To do this, you will need to add a clie
 To search another Organization:
 
 ```rb
-node.default['sbg_global_search']['search']['myorg']['endpoint'] = 'http://yourchefserver/organizations/myorg'
-node.default['sbg_global_search']['search']['myorg']]['search_key'] = 'Client key content'
-chef-shell> include_recipe "sbg_global_search"
+node.default['global_search']['search']['myorg']['endpoint'] = 'http://yourchefserver/organizations/myorg'
+node.default['global_search']['search']['myorg']]['search_key'] = 'Client key content'
+chef-shell> include_recipe "global_search"
 chef-shell> result = get_role_member_hostnames('common', 'myorg')
 ['host-d','host-e','host-f']
 chef-shell>
