@@ -31,34 +31,32 @@ module GlobalSearch
 
       unless node.run_state.has_key? attr_key
         node.run_state[attr_key] = [ ]
-        namehash = { }
+        node_cache = {}
 
-        # simple handler, adds a name field by splitting fqdn
-        # also does repeat node filtering - first one wins
+        # cache nodes
         handler = lambda do |n|
             en = n.clone
-            en.default['name'] = en['fqdn'].split('.')[0]
-            unless namehash.has_key?( en['name'] )
-                node.run_state[attr_key].push( en )
-                namehash[en['name']] = true
+            unless node_cache.has_key?(en.name)
+                node.run_state[attr_key].push(n)
+                node_cache[en.name] = true
             end
         end
         # Only pull back the attributes we care about, Chef node JSON can be large
         # and its slow to serialize and deserialize 
         args = {
-            :rows   =>  1000,
-            :filter_result   =>  {
-              :fqdn => [ 'name' ],
-              :ipaddress => [ 'ipaddress' ],
-              :roles => [ 'role' ]
-            },
+            :rows => 1000,
+            :filter_result => {
+              :fqdn => ['name'],
+              :ipaddress => ['ipaddress'],
+              :roles => ['role']
+            }
         }
 
         # do the search using partial search
         # this incidentially implements paging for >1000 nodes
         Chef::Search::Query.new.search(:node, "*:*", args, &handler);
-        # and sort those by fqdn
-        node.run_state[attr_key].sort! { |m,n| m['name'] <=> n['name'] }
+        # and sort those by name
+        node.run_state[attr_key].sort! { |m,n| m.name <=> n.name }
       end
       # Reset the Chef client config back to the original values
       Chef::Config[:chef_server_url] = real_endpoint
