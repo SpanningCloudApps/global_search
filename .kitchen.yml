@@ -7,9 +7,9 @@ driver:
 
 provisioner:
   name: chef_solo
-  environments_path: ./envs
-  nodes_path: ./nodes
-  roles_path: ./roles
+  environments_path: ./test/integration/default/environments
+  nodes_path: ./test/integration/default/nodes
+  roles_path: ./test/integration/default/roles
   solo_rb:
     environment: DEV
     node_name: testhost
