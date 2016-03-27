@@ -30,34 +30,9 @@ module GlobalSearch
           Chef::Config[:chef_server_url] = node['global_search']['search'][env.downcase]['endpoint']
         end
 
+        # Get nodes via search.
         unless node.run_state.has_key? attr_key
-          node.run_state[attr_key] = [ ]
-          node_cache = {}
-
-          # cache nodes
-          handler = lambda do |n|
-              en = n.clone
-              unless node_cache.has_key?(en.name)
-                  node.run_state[attr_key].push(n)
-                  node_cache[en.name] = true
-              end
-          end
-          # Only pull back the attributes we care about, Chef node JSON can be large
-          # and its slow to serialize and deserialize 
-          args = {
-              :rows => 1000,
-              :filter_result => {
-                :fqdn => ['name'],
-                :ipaddress => ['ipaddress'],
-                :roles => ['role']
-              }
-          }
-
-          # do the search using partial search
-          # this incidentially implements paging for >1000 nodes
-          Chef::Search::Query.new.search(:node, "*:*", args, &handler);
-          # and sort those by name
-          node.run_state[attr_key].sort! { |m,n| m.name <=> n.name }
+          node.run_state[attr_key] = search(:node, "*:*")
         end
       rescue StandardError => error
         Chef::Log.error("Unable to get nodes for #{env}: #{error}")
@@ -79,24 +54,24 @@ module GlobalSearch
         if !nodes
           return []
         end
-        nodes.select { |n| n['roles'].include? role }
+        nodes.select { |n| n.roles.include? role }
     end
 
     # @param [String] role the role for which we want a sorted list of members
     # @return [Array] sorted list of node names in the current environment which belong to the searched role
     def get_role_member_hostnames(role, env=node.chef_environment.downcase)
-      get_role_member_list( role, env ).map { |n| n['name'] }
+      get_role_member_list( role, env ).map { |n| n.hostname }
     end
     # @param [String] role the role for which we want a sorted list of members
     # @return [Array] sorted list of node names in the current environment which belong to the searched role
     def get_role_member_ips(role, env=node.chef_environment.downcase)
-      get_role_member_list( role, env ).map { |n| n['ipaddress'] }
+      get_role_member_list( role, env ).map { |n| n.ipaddress }
     end
 
     # @param [String] role the role for which we want a sorted list of members
     # @return [Array] sorted list of node names in the current environment which belong to the searched role
     def get_role_member_fqdns(role, env=node.chef_environment.downcase)
-      get_role_member_list( role, env ).map { |n| n['fqdn'] }
+      get_role_member_list( role, env ).map { |n| n.fqdn }
     end
 
   end
