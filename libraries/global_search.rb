@@ -54,7 +54,7 @@ module GlobalSearch
         if !nodes
           return []
         end
-        nodes.select { |n| n.roles.include? role }
+        nodes.select { |n| n.role? role }
     end
 
     # @param [String] role the role for which we want a sorted list of members
